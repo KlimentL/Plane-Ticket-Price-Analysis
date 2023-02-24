@@ -1,1 +1,91 @@
-Start
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Lasso
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import ShuffleSplit
+from sklearn.model_selection import GridSearchCV
+
+#Getting rid of missing data
+no_outliers=df.drop(["Unnamed: 0","flight","departure_time","arrival_time","stops"],axis=1)
+
+df1=no_outliers.copy()
+
+#LabelEncoder
+label_encoder=LabelEncoder()
+
+#Combining Departure and Arrival together
+df1["source_and_destination"] = df1[["source_city", "destination_city"]].apply(lambda x: "-".join(x), axis=1)
+df2.drop(["source_city","destination_city"],axis=1,inplace=True)
+
+#Creating 2 dataframes that will contain separately (Economy & Business tickets)
+economy=df1["class"]=="Economy"]
+business=df1["class"]=="Business"]
+
+#Creating Temporary dataframe
+dftemp=no_outliers.reset_index() 
+
+#Lable Mapping
+df1['airline']=label_encoder.fit_transform(df1['airline'])
+
+label_map_airline= dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
+
+df1['class']=label_encoder.fit_transform(df1['class'])
+label_map_class= dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
+
+df1['source_and_destination']=label_encoder.fit_transform(df1['source_and_destination'])
+label_map_sd= dict(zip(label_encoder.classes_, label_encoder.transform(label_encoder.classes_)))
+
+#Train_Test 
+
+x=df1.drop('price',axis=1)
+y=df1.price
+
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.1,random_state=42)
+
+#DecisionTree
+model=DecisionTreeRegressor(criterion='friedman_mse',splitter='best')
+model.fit(x_train,y_train)
+
+model.score(x_test,y_test)
+#Prediction Accuracy: >90%
+    
+#BUSIEST DESTINATION   
+destination_analysis=dftemp.groupby("destination_city").count()['index']
+destinations=[destination_city for destination_city,df in no_outliers.groupby("destination_city") ]
+plt.figure(figsize=(8,4))     
+plt.bar(destinations, destination_analysis,color='blue')
+plt.xticks(destinations, rotation="vertical")
+plt.grid()
+plt.title("Busiest Destination")
+plt.xlabel("Destinations")
+plt.ylabel('Count')
+plt.show()
+
+#ECONOMY
+analysis_e=economy.groupby("days_left").mean()['price']
+day_e=[days_left for days_left,df in economy.groupby("days_left") ]
+plt.figure(figsize=(8,4))     
+plt.plot(day, day_analysis,color='red')
+plt.title("Ticket Price Purchase Difference Before Departure ")
+plt.xlabel("Left")
+plt.ylabel('Price')
+plt.show()
+
+#BUSINESS
+analysis_b=business.groupby("days_left").mean()['price']
+day_b=[days_left for days_left,df in business.groupby("days_left") ]
+plt.figure(figsize=(8,4))     
+plt.plot(day_b, day_analysis_b,color='red')
+plt.title("Ticket Price Purchase Difference Before Departure")
+plt.xlabel("Left")
+plt.ylabel('Price')
+plt.show()
+
+TABLEAU PRICE PREDICTION ANALYSIS
+https://public.tableau.com/app/profile/kliment.liubcsenko/viz/Flight-TicketAnalysis/FlightTicketAnalysis
